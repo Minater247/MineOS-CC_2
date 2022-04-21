@@ -10,7 +10,29 @@ local event, handlers, interruptingKeysDown, lastInterrupt = {
 	push = os.queueEvent
 }, {}, {}, 0
 
-local computerPullSignal, computerUptime, mathHuge, mathMin, skipSignalType = os.pullEvent, os.uptime, math.huge, math.min
+local computerUptime, mathHuge, mathMin, skipSignalType = os.uptime, math.huge, math.min
+
+--timeout is optional, and may be a name of a signal
+--it may also be nil, in which case we have no timeout
+local function computerPullSignal(timeout, ...)
+	if type(timeout) == "number" then
+		local timerID = os.startTimer(timeout)
+		local polling = true
+		local nevent
+		local names = {..., "timer"}
+		while polling do
+			nevent = {os.pullEvent(unpack(names))}
+			if nevent[1] == "timer" and nevent[2] == timerID then
+				polling = false
+				return nil
+			else
+				return unpack(nevent)
+			end
+		end
+	else
+		return os.pullEvent(...)
+	end
+end
 
 --------------------------------------------------------------------------------------------------------
 
@@ -89,10 +111,10 @@ function event.pull(preferredTimeout)
 		end
 
 		-- Program interruption support. It's faster to do it here instead of registering handlers
-		if (signalData[1] == "key_down" or signalData[1] == "key_up") and event.interruptingEnabled then
+		if (signalData[1] == "key" or signalData[1] == "key_up") and event.interruptingEnabled then
 			-- Analysing for which interrupting key is pressed - we don't need keyboard API for this
 			if event.interruptingKeyCodes[signalData[4]] then
-				interruptingKeysDown[signalData[4]] = signalData[1] == "key_down" and true or nil
+				interruptingKeysDown[signalData[4]] = signalData[1] == "key" and true or nil
 			end
 
 			local shouldInterrupt = true
