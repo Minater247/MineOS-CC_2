@@ -7,10 +7,10 @@ local event, handlers, interruptingKeysDown, lastInterrupt = {
 		[46] = true,
 		[56] = true
 	},
-	push = computer.pushSignal
+	push = os.queueEvent
 }, {}, {}, 0
 
-local computerPullSignal, computerUptime, mathHuge, mathMin, skipSignalType = computer.pullSignal, computer.uptime, math.huge, math.min
+local computerPullSignal, computerUptime, mathHuge, mathMin, skipSignalType = os.pullEvent, os.uptime, math.huge, math.min
 
 --------------------------------------------------------------------------------------------------------
 
